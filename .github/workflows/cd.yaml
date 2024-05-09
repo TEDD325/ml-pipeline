@@ -1,0 +1,44 @@
+name: deploy # 워크플로우의 이름
+
+on: # 언제 실행할지에 대한 설정
+  push: # push 이벤트가 발생할 때(pull_request도 가능함)
+    branches: # 어떤 브랜치에서
+      - main # main 브랜치에서
+
+jobs: # 실행할 작업 목록
+  SSH: # 작업 이름
+    - uses: actions/checkout@v2 # 사용할 액션
+    # actions/checkout@v2: 코드를 체크아웃하는 액션
+    # v2: 버전 2를 사용한다는 의미
+    # 체크아웃: 코드를 가져오는 것
+    # 코드를 가져오는 이유: 코드를 가져와서 빌드하고 배포하기 위함
+    # 코드를 가져오는 방법: git pull을 사용하여 가져옴
+    - name: Run scripts in server # 서버에서 스크립트 실행
+      uses: appleboy/ssh-action@master # 사용할 액션
+      # appleboy: 액션 제공자
+      # ssh-action@master: ssh-action의 master 브랜치를 사용한다는 의미
+      # ssh-action: SSH를 사용하여 원격 서버에 접속하는 액션
+      # 사용할 액션: 원격 서버에 접속하여 스크립트를 실행하는 액션
+      with: # 액션에 전달할 인자
+        key: ${{ secrets.SSH_PRIVATE_KEY }} # SSH_PRIVATE_KEY라는 시크릿을 사용
+        host: ${{ secrets.SSH_HOST }} # SSH_HOST라는 시크릿을 사용
+        username: ${{ secrets.SSH_USERNAME }} # SSH_USERNAME라는 시크릿을 사용
+        script: | # 실행할 스크립트
+          cd ${{ vars.project_path }}/${{ github.event.repository.name }}
+          git pull origin main
+        # ${{ vars.project_path }}/${{ github.event.repository.name }}: 배포 서버 내의 프로젝트 경로로 이동
+        # vars.project_path: 프로젝트 경로를 저장한 변수
+        # github.event.repository.name: 깃허브 저장소 이름을 저장한 변수
+        # git pull origin main: main 브랜치에서 최신 코드를 가져옴
+# 정리: 
+# 1. main 브랜치에 push 이벤트가 발생하면, 원격 서버에 접속하여 최신 코드를 가져옴
+# 2. 이후, 서버에서 스크립트를 실행하여 배포를 진행함
+# 3. 이때, 시크릿을 사용하여 접속 정보를 숨김
+# 4. 또한, 변수를 사용하여 프로젝트 경로를 저장하고 사용함
+# 이렇게 하면, 코드를 수정하고 push만 하면 자동으로 배포가 진행됨
+# 이러한 과정을 CI/CD(지속적 통합/지속적 배포)라고 함
+# CI/CD를 사용하면, 코드를 수정하고 배포하는 과정을 자동화할 수 있음
+# 이를 통해, 개발자는 코드 작성에 집중할 수 있고, 배포는 자동으로 진행됨
+# 따라서, 개발 생산성을 높일 수 있음
+# 또한, 배포 과정에서 발생할 수 있는 실수를 줄일 수 있음
+# 따라서, CI/CD를 사용하는 것이 좋음
