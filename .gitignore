@@ -10,3 +10,6 @@ webserver_config.py
 airflow.cfg
 airflow.db
 compose.yaml
+mlruns
+.minio.yaml
+mlflow-compose.yaml

@@ -15,7 +15,8 @@ import mlflow
 from mlflow.tracking import MlflowClient
 from mlflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
 import logging
-        
+import os
+
 
 def train_fn_for_hospital(**context): 
     # context: Airflow의 task 간 데이터를 전달하는 객체
@@ -96,7 +97,8 @@ def train_fn_for_hospital(**context):
     # objective 함수는 하이퍼파라미터 최적화를 위한 목적 함수로, optuna 라이브러리에서 사용
     
     storage = RDBStorage(
-        url=hook.get_uri().replace("/postgres", "/optuna"), # RDBStorage: optuna의 스토리지
+        # url=hook.get_uri().replace("/postgres", "/optuna"), # RDBStorage: optuna의 스토리지
+        url=PostgresHook(postgres_conn_id="postgres-dev-optuna").get_uri()
         # url: optuna의 스토리지 URL
         # hook.get_uri(): PostgresHook의 URI
         # "/postgres": PostgresHook의 URI에서 "/postgres"를 "/optuna"로 대체
@@ -227,6 +229,8 @@ def transition_model_stage(model_name: str, **context):
     
     client = MlflowClient()
     production_model = None # production_model: 현재 운영 중인 모델
+    print("model_name: {}".format(model_name))
+    print("version: {}".format(version))
     current_model = client.get_model_version(model_name, version)
     # get_model_version: 모델의 버전을 가져오는 함수
     # model_name: 가져올 모델의 이름
